@@ -41,8 +41,12 @@ Usage: cfls [container]	Lists all objects in a container if specified, else will
 == CFMKDIR ==
 CloudFile MakeDirectory creates containers in your Cloud
 
+Usage: cfmkdir container
+
 == CFRM ==
 CloudFile Remove deletes a container or file from your Cloud
+
+
 
 == CFMV ==
 CloudFile Move copies files to a local or 
