@@ -1,0 +1,5 @@
+# Place in ~/.config/racktools/ (user) or /etc (global) or where the racktool commands may live
+#+ If you put them somewhere else, put the configuration in the bin directory, its parent, or in bin/../etc
+
+{:user => "USER"}
+{:api_key => "SECRET"}

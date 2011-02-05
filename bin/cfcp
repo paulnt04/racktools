@@ -1,0 +1,145 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'cloudfiles'
+require 'ftools'
+
+# Find configuration file
+if File.exists?("/etc/racktools.conf")
+  filename ='/etc/racktools.conf'
+elsif File.exists?(File.join(`echo -ne $HOME`, '.config/racktools/racktools.conf').gsub(/-ne\s/,''))
+  filename = File.join(`echo -ne $HOME`, '.config/racktools/racktools.conf').gsub(/-ne\s/,'')
+elsif File.exists?(File.join(File.dirname(__FILE__), '../etc/racktools.conf'))
+  filename = File.join(File.dirname(__FILE__), '../etc/racktools.conf')
+elsif File.exists?(File.join(File.dirname(__FILE__), '../racktools.conf'))
+  filename = File.join(File.dirname(__FILE__), '../racktools.conf')
+elsif File.exists?(File.join(File.dirname(__FILE__), 'racktools.conf'))
+  filename = File.join(File.dirname(__FILE__), 'racktools.conf')
+else
+  puts "Error: Cannot find configuration file. Exiting"
+  exit(1)
+end
+
+# Parse out command line arguments
+
+@options = []
+ARGV.each do |arg|
+  if arg =~ /-(r|v|s){1,3}/
+    @options += [arg]
+  else
+    if @source
+      @destination = arg
+    else
+      @source = arg
+    end
+  end
+end
+
+# Parse configuration file
+conf = IO.readlines(filename)
+conf.each do |line|
+  if @options.index("d") || @options.index("-d")
+    puts line
+  end
+  # Evals if hash, else nil and errors
+  hash = eval(line) rescue nil
+  if hash
+    if hash[:user]
+      @user = hash[:user]
+    elsif hash[:api_key]
+      @api_key = hash[:api_key]
+    end
+  end
+end
+
+if @options.index("d") || @options.index("-d")
+  puts "USER: " + @user.to_s
+  puts "API_KEY: " + @api_key.to_s
+end
+
+# Exits if no user or api_key
+if !(@user && @api_key)
+  puts "Error: Syntax in configuration"
+  puts "Usage: cfcp [-svr] source destination"
+  exit(1)
+end
+
+# Connect to RackSpace via API_KEY
+connection = CloudFiles::Connection.new(:username => "#{@user}", :api_key => "#{@api_key}")
+
+# Debug Info
+if @options.index("d") || @options.index("-d")
+  puts "OPTIONS: " + @options.to_s
+  puts "SOURCE: " + @source
+  puts "DESTINATION: " + @destination
+end
+
+# Parse out source and destination locations
+
+@source_info = {}
+if @source =~ /:/
+  @source_info[:type] = 'remote'
+  @source_info[:container] = @source.split(/:/)[0] rescue "error"
+  @source_info[:file] = @source.split(/:/)[1] rescue "error"
+else
+  @source_info[:type] = 'local'
+  @source_info[:path] = @source
+end
+
+@dest_info = {}
+if @destination  =~ /:/
+  @dest_info[:type] = 'remote'
+  @dest_info[:container] = @destination.split(/:/)[0] rescue "error"
+  @dest_info[:file] = @destination.split(/:/)[1] rescue "error"
+else
+  @dest_info[:type] = 'local'
+  @dest_info[:path] = @destination
+end
+
+# Tests source file to exist and destination directory or container to exist and then transfer
+
+if @source_info[:type] == 'remote'
+  if connection.container(@source_info[:container])
+    container = connection.container(@source_info[:container])
+    if (container.object(@source_info[:file]) rescue nil)
+      @source_data = connection.container(@source_info[:container]).object(@source_info[:file]).data
+    else
+      puts "Error: Source File does not exist"
+      exit(1)
+    end
+  else
+    puts "Error: Source Container does not exist"
+    exit(1)
+  end
+elsif @source_info[:type] == 'local'
+  if File.exists?(@source_info[:path])
+    @source_data = IO.read(@source_info[:path])
+  else
+    puts "Error: Source File does not exist"
+    exit(1)
+  end
+end
+
+if @dest_info[:type] == 'remote'
+  if (connection.container(@dest_info[:container]) rescue nil)
+    dest = connection.container(@dest_info[:container]).create_object @dest_info[:file].to_s, false
+    dest.write @source_data
+  else
+    puts "Error: Destination Container does not exist"
+    exit(1)
+  end
+elsif @dest_info[:type] == 'local'
+  if File.exists?(File.dirname(@source_info[:path]))
+    dest = File.new(@dest_info[:path],'w+')
+    #if !File.new(File.dirname(@source_info[:path])).writable?
+    #  puts "Error: Destination not writable"
+    #  exit(1)
+    #end
+    dest.write(@source_data)
+  else
+    puts "Error: Destination Directory does not exist"
+    exit(1)
+  end
+end
+
+exit(0)

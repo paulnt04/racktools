@@ -1,0 +1,33 @@
+===== RACKTOOLS v0.1a =====
+
+Command Line Tools for use with RackSpace Cloud's Services
+Requires Ruby 1.9.x
+
+== CFCP ==
+CloudFile Copy copies files to and from your CloudFile, between CloudFile containers, and between local destinations
+
+Usage: cfcp [-svr] source destination
+
+Source and destination are formatted as such:
+Local Files: ABSOLUTE Path to File
+Cloud Files: container:file
+
+-s				Silent Output
+-v				Verbose Output
+-r				Recursive into directory
+-h				Shows this file
+-d				Shows debug info
+
+== CFLS ==
+CloudFile List lists all files in a container, or all containers
+
+Usage: cfls [container]	Lists all objects in a container if specified, else will list all containers
+
+== CFMKDIR ==
+CloudFile MakeDirectory creates containers in your Cloud
+
+== CFRM ==
+CloudFile Remove deletes a container or file from your Cloud
+
+== CFMV ==
+CloudFile Move copies files to a local or 
