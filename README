@@ -1,7 +1,15 @@
 ===== RACKTOOLS v0.1a =====
 
 Command Line Tools for use with RackSpace Cloud's Services
-Requires Ruby 1.9.x
+Requires Ruby 1.8.5+
+
+== Installation ==
+
+Please put all files in bin/ in a directory in your path.
+
+Copy racktools.conf.example to racktools.conf
+Place racktools.conf in ~/.config/racktools/ (user) or /etc (global) 
+or where the racktool commands may live (in the bin directory, bin/../ parent, or in bin/../etc/)
 
 == CFCP ==
 CloudFile Copy copies files to and from your CloudFile, between CloudFile containers, and between local destinations
@@ -12,10 +20,17 @@ Source and destination are formatted as such:
 Local Files: ABSOLUTE Path to File
 Cloud Files: container:file
 
+NOTE: OPTIONS ARE NOT YET IMPLEMENTED
+
 -s				Silent Output
+
 -v				Verbose Output
+
 -r				Recursive into directory
+				Note: Output will be flat in destination directoy
+				
 -h				Shows this file
+
 -d				Shows debug info
 
 == CFLS ==

@@ -1,1 +1,5 @@
 Refactor repetitive code and nest if statements to consolidate code
+
+Implement CFLS, CFMKDIR, and CFRM
+
+Implement OPTIONS in CFCP
